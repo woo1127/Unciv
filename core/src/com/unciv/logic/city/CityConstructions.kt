@@ -140,11 +140,11 @@ class CityConstructions : IsPartOfGameInfoSerialization {
     }
 
     /** @param constructionName needs to be a non-perpetual construction, else an empty string is returned */
-    internal fun getTurnsToConstructionString(constructionName: String, useStoredProduction:Boolean = true) =
+    internal fun getTurnsToConstructionString(constructionName: String, useStoredProduction: Boolean = true) =
         getTurnsToConstructionString(getConstruction(constructionName), useStoredProduction)
 
     /** @param construction needs to be a non-perpetual construction, else an empty string is returned */
-    internal fun getTurnsToConstructionString(construction: IConstruction, useStoredProduction:Boolean = true): String {
+    internal fun getTurnsToConstructionString(construction: IConstruction, useStoredProduction: Boolean = true): String {
         if (construction !is INonPerpetualConstruction) return ""   // shouldn't happen
         val cost = construction.getProductionCost(city.civ, city)
         val turnsToConstruction = turnsToConstruction(construction.name, useStoredProduction)
@@ -267,6 +267,10 @@ class CityConstructions : IsPartOfGameInfoSerialization {
         if (workLeft <= productionOverflow) // if we already have stored up enough production to finish it directly
             return 1 // we'll finish this next turn
 
+        return ceil((workLeft-productionOverflow) / productionForConstruction(constructionName).toDouble()).toInt()
+    }
+
+    fun productionForConstruction(constructionName: String): Int {
         val cityStatsForConstruction: Stats
         if (currentConstructionFromQueue == constructionName) cityStatsForConstruction = city.cityStats.currentCityStats
         else {
@@ -288,9 +292,7 @@ class CityConstructions : IsPartOfGameInfoSerialization {
             cityStatsForConstruction = cityStats.currentCityStats
         }
 
-        val production = cityStatsForConstruction.production.roundToInt()
-
-        return ceil((workLeft-productionOverflow) / production.toDouble()).toInt()
+        return cityStatsForConstruction.production.roundToInt()
     }
 
     fun cheapestStatBuilding(stat: Stat): Building? {
@@ -590,7 +592,7 @@ class CityConstructions : IsPartOfGameInfoSerialization {
         setTransients()
     }
 
-    fun updateUniques(onLoadGame:Boolean = false) {
+    fun updateUniques(onLoadGame: Boolean = false) {
         builtBuildingUniqueMap.clear()
         for (building in getBuiltBuildings())
             builtBuildingUniqueMap.addUniques(building.uniqueObjects)

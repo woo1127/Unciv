@@ -460,7 +460,7 @@ class MapUnit : IsPartOfGameInfoSerialization {
         return true
     }
 
-    fun getInterceptionRange():Int {
+    fun getInterceptionRange(): Int {
         val rangeFromUniques = getMatchingUniques(UniqueType.AirInterceptionRange, checkCivInfoUniques = true)
             .sumOf { it.params[0].toInt() }
         return baseUnit.interceptRange + rangeFromUniques
@@ -534,7 +534,7 @@ class MapUnit : IsPartOfGameInfoSerialization {
         return MultiFilter.multiFilter(filter, ::matchesSingleFilter)
     }
 
-    private fun matchesSingleFilter(filter:String): Boolean {
+    private fun matchesSingleFilter(filter: String): Boolean {
         return when (filter) {
             Constants.wounded, "wounded units" -> health < 100
             Constants.barbarians, "Barbarian" -> civ.isBarbarian()
@@ -612,18 +612,11 @@ class MapUnit : IsPartOfGameInfoSerialization {
     }
 
     fun updateUniques() {
-        val uniques = ArrayList<Unique>()
-        uniques.addAll(baseUnit.uniqueObjects)
-        uniques.addAll(type.uniqueObjects)
-
-        for (promotion in promotions.getPromotions()) {
-            uniques.addAll(promotion.uniqueObjects)
-        }
-
-        tempUniquesMap = UniqueMap().apply {
-            addUniques(uniques)
-        }
-
+        val uniqueSources =
+            baseUnit.uniqueObjects.asSequence() +
+                type.uniqueObjects +
+                promotions.getPromotions().flatMap { it.uniqueObjects }
+        tempUniquesMap = UniqueMap(uniqueSources)
         cache.updateUniques()
     }
 
