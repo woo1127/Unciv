@@ -802,6 +802,16 @@ class Civilization : IsPartOfGameInfoSerialization {
         }
     }
 
+    fun getStatOfNextTurn(stat: Stat): Int {
+        return when (stat) {
+            Stat.Culture -> stats.statsForNextTurn.culture.roundToInt()
+            Stat.Science -> stats.statsForNextTurn.science.roundToInt()
+            Stat.Gold -> stats.statsForNextTurn.gold.roundToInt()
+            Stat.Culture -> stats.statsForNextTurn.culture.roundToInt()
+            else -> 0
+        }
+    }
+
     // region addNotification
     fun addNotification(text: String, category: NotificationCategory, vararg notificationIcons: String) =
         addNotification(text, null, category, *notificationIcons)

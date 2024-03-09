@@ -665,6 +665,10 @@ enum class UniqueType(
     ConditionalWhenBelowAmountStatResource("when below [amount] [stat/resource]", UniqueTarget.Conditional),
     ConditionalWhenBetweenStatResource("when between [amount] and [amount] [stat/resource]", UniqueTarget.Conditional),
 
+    ConditionalWhenAboveAmountStatResourcePerTurn("when above [amount] [stat/resource] per turn", UniqueTarget.Conditional),
+    ConditionalWhenBelowAmountStatResourcePerTurn("when below [amount] [stat/resource] per turn", UniqueTarget.Conditional),
+    ConditionalWhenBetweenStatResourcePerTurn("when between [amount] and [amount] [stat/resource] per turn", UniqueTarget.Conditional),
+
     // The game speed-adjusted versions of above
     ConditionalWhenAboveAmountStatResourceSpeed("when above [amount] [stat/resource] (modified by game speed)", UniqueTarget.Conditional),
     ConditionalWhenBelowAmountStatResourceSpeed("when below [amount] [stat/resource] (modified by game speed)", UniqueTarget.Conditional),

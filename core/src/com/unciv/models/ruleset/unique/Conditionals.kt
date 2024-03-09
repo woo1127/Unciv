@@ -80,10 +80,11 @@ object Conditionals {
 
         /** Helper for ConditionalWhenAboveAmountStatResource and its below counterpart */
         fun checkResourceOrStatAmount(
-            resourceOrStatName: String, 
-            lowerLimit: Float, 
-            upperLimit: Float, 
+            resourceOrStatName: String,
+            lowerLimit: Float,
+            upperLimit: Float,
             modifyByGameSpeed: Boolean = false,
+            perTurn: Boolean = false,
             compare: (current: Int, lowerLimit: Float, upperLimit: Float) -> Boolean
         ): Boolean {
             if (gameInfo == null) return false
@@ -93,10 +94,14 @@ object Conditionals {
                 return compare(getResourceAmount(resourceOrStatName), lowerLimit * gameSpeedModifier, upperLimit * gameSpeedModifier)
             val stat = Stat.safeValueOf(resourceOrStatName)
                 ?: return false
-            val statReserve = if (relevantCity != null) relevantCity!!.getStatReserve(stat) else relevantCiv!!.getStatReserve(stat)
+            val statAmount = if (!perTurn) {
+                if (relevantCity != null) relevantCity!!.getStatReserve(stat) else relevantCiv!!.getStatReserve(stat)
+            } else {
+                if (relevantCity != null) relevantCity!!.getStatOfNextTurn(stat) else relevantCiv!!.getStatOfNextTurn(stat)
+            }
 
             gameSpeedModifier = if (modifyByGameSpeed) gameInfo!!.speed.statCostModifiers[stat]!! else 1f
-            return compare(statReserve, lowerLimit * gameSpeedModifier, upperLimit * gameSpeedModifier)
+            return compare(statAmount, lowerLimit * gameSpeedModifier, upperLimit * gameSpeedModifier)
         }
 
         return when (condition.type) {
@@ -115,22 +120,32 @@ object Conditionals {
             UniqueType.ConditionalWithoutResource -> getResourceAmount(condition.params[0]) <= 0
 
             UniqueType.ConditionalWhenAboveAmountStatResource ->
-                checkResourceOrStatAmount(condition.params[1], condition.params[0].toFloat(), Float.MAX_VALUE) 
+                checkResourceOrStatAmount(condition.params[1], condition.params[0].toFloat(), Float.MAX_VALUE)
                     { current, lowerLimit, _ -> current > lowerLimit }
             UniqueType.ConditionalWhenBelowAmountStatResource ->
-                checkResourceOrStatAmount(condition.params[1], Float.MIN_VALUE, condition.params[0].toFloat()) 
+                checkResourceOrStatAmount(condition.params[1], Float.MIN_VALUE, condition.params[0].toFloat())
                     { current, _, upperLimit -> current < upperLimit }
             UniqueType.ConditionalWhenBetweenStatResource ->
-                checkResourceOrStatAmount(condition.params[2], condition.params[0].toFloat(), condition.params[1].toFloat()) 
+                checkResourceOrStatAmount(condition.params[2], condition.params[0].toFloat(), condition.params[1].toFloat())
                     { current, lowerLimit, upperLimit -> current >= lowerLimit && current <= upperLimit }
             UniqueType.ConditionalWhenAboveAmountStatResourceSpeed ->
-                checkResourceOrStatAmount(condition.params[1], condition.params[0].toFloat(), Float.MAX_VALUE, true) 
+                checkResourceOrStatAmount(condition.params[1], condition.params[0].toFloat(), Float.MAX_VALUE, true)
                     { current, lowerLimit, _ -> current > lowerLimit }
             UniqueType.ConditionalWhenBelowAmountStatResourceSpeed ->
-                checkResourceOrStatAmount(condition.params[1], Float.MIN_VALUE, condition.params[0].toFloat(), true) 
+                checkResourceOrStatAmount(condition.params[1], Float.MIN_VALUE, condition.params[0].toFloat(), true)
                     { current, _, upperLimit -> current < upperLimit }
-            UniqueType.ConditionalWhenBetweenStatResourceSpeed -> 
-                checkResourceOrStatAmount(condition.params[2], condition.params[0].toFloat(), condition.params[1].toFloat(), true) 
+            UniqueType.ConditionalWhenBetweenStatResourceSpeed ->
+                checkResourceOrStatAmount(condition.params[2], condition.params[0].toFloat(), condition.params[1].toFloat(), true)
+                    { current, lowerLimit, upperLimit -> current >= lowerLimit && current <= upperLimit }
+
+            UniqueType.ConditionalWhenAboveAmountStatResourcePerTurn ->
+                checkResourceOrStatAmount(condition.params[1], condition.params[0].toFloat(), Float.MAX_VALUE, perTurn = true)
+                    { current, lowerLimit, _ -> current > lowerLimit }
+            UniqueType.ConditionalWhenBelowAmountStatResourcePerTurn ->
+                checkResourceOrStatAmount(condition.params[1], Float.MIN_VALUE, condition.params[0].toFloat(), perTurn = true)
+                    { current, _, upperLimit -> current < upperLimit }
+            UniqueType.ConditionalWhenBetweenStatResourcePerTurn ->
+                checkResourceOrStatAmount(condition.params[2], condition.params[0].toFloat(), condition.params[1].toFloat(), perTurn = true)
                     { current, lowerLimit, upperLimit -> current >= lowerLimit && current <= upperLimit }
 
             UniqueType.ConditionalHappy -> checkOnCiv { stats.happiness >= 0 }

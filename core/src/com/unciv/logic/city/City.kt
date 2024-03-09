@@ -217,6 +217,14 @@ class City : IsPartOfGameInfoSerialization {
         }
     }
 
+    fun getStatOfNextTurn(stat: Stat): Int {
+        return when (stat) {
+            Stat.Food -> cityStats.currentCityStats.food.roundToInt()
+            Stat.Production -> cityStats.currentCityStats.production.roundToInt()
+            else -> civ.getStatOfNextTurn(stat)
+        }
+    }
+
     internal fun getMaxHealth() =
         200 + cityConstructions.getBuiltBuildings().sumOf { it.cityHealth }
 
